@@ -346,6 +346,7 @@ body {
   <div class="sidebar-bottom">
     <button onclick="showNotes()">📝 View Notes</button>
     <button onclick="exportSlides(this)" id="exportBtn">📊 Export Slides</button>
+    <button onclick="showExports()">🗂 View Slides</button>
   </div>
 </aside>
 
@@ -375,6 +376,17 @@ body {
       <button onclick="document.getElementById('notesModal').classList.remove('visible')">✕</button>
     </div>
     <div class="modal-body" id="notesContent">Loading...</div>
+  </div>
+</div>
+
+<!-- Exports modal -->
+<div class="modal-overlay" id="exportsModal" onclick="closeModal(event, 'exportsModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🗂 Exported Slides</h2>
+      <button onclick="document.getElementById('exportsModal').classList.remove('visible')">✕</button>
+    </div>
+    <div class="modal-body" id="exportsContent">Loading...</div>
   </div>
 </div>
 
@@ -796,6 +808,38 @@ async function showNotes() {
   const res = await fetch('/api/notes');
   const data = await res.json();
   document.getElementById('notesContent').innerHTML = renderMarkdown(data.content);
+}
+
+async function showExports() {
+  document.getElementById('exportsModal').classList.add('visible');
+  const container = document.getElementById('exportsContent');
+  container.textContent = 'Loading...';
+  try {
+    const res = await fetch('/api/exports');
+    const exports = await res.json();
+    if (!exports.length) {
+      container.textContent = 'No exported slides yet. Use "Export Slides" to create one.';
+      return;
+    }
+    const list = document.createElement('ul');
+    list.style.cssText = 'list-style:none;padding:0;margin:0;';
+    for (const exp of exports) {
+      const li = document.createElement('li');
+      li.style.cssText = 'padding:10px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;';
+      const name = exp.filename.replace(/\.html$/, '').replace(/learning_slides_/, '').replace(/_/g, ' ');
+      const kb = (exp.size / 1024).toFixed(1);
+      li.innerHTML = `<span style="font-size:0.9rem">${name}</span>`
+        + `<span style="display:flex;gap:8px;align-items:center">`
+        + `<span style="font-size:0.75rem;color:var(--text-muted)">${kb} KB</span>`
+        + `<a href="${exp.url}" target="_blank" style="color:var(--primary);font-weight:600;font-size:0.85rem;text-decoration:none">Open</a>`
+        + `</span>`;
+      list.appendChild(li);
+    }
+    container.innerHTML = '';
+    container.appendChild(list);
+  } catch(e) {
+    container.textContent = 'Failed to load exports: ' + e.message;
+  }
 }
 
 async function exportSlides(btn) {

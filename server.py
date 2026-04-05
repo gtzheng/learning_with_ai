@@ -557,6 +557,15 @@ async def serve_export(filename: str):
     return FileResponse(path, media_type="text/html")
 
 
+@app.get("/api/exports")
+async def list_exports():
+    files = sorted(EXPORTS_DIR.glob("*.html"), key=lambda p: p.stat().st_mtime, reverse=True)
+    return [
+        {"filename": f.name, "url": f"/exports/{f.name}", "size": f.stat().st_size}
+        for f in files
+    ]
+
+
 @app.get("/api/notes")
 async def get_notes():
     return {"content": NOTES_FILE.read_text()}

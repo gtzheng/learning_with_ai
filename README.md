@@ -20,6 +20,7 @@ An interactive AI-powered learning platform that lets you study any topic throug
 
 ```bash
 uv venv
+source .venv/bin/activate
 uv pip install fastapi uvicorn anthropic
 ```
 
