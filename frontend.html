@@ -456,6 +456,8 @@ let topics = [];
 let activeTopic = null;
 let activeSlug = null;
 let sending = false;
+// Tracks in-progress streams: slug -> { fullResponse, done }
+const activeStreams = new Map();
 
 function slugify(text) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -535,6 +537,7 @@ function renderTopics() {
 async function selectTopic(topic) {
   activeTopic = topic;
   activeSlug = slugify(topic);
+  const mySlug = activeSlug;
   const themeName = themes.find(t => t.slug === activeThemeSlug)?.name || activeThemeSlug;
   document.getElementById('topicTitle').textContent = topic;
   document.getElementById('breadcrumb').textContent = `${themeName} > ${topic}`;
@@ -546,10 +549,33 @@ async function selectTopic(topic) {
   const msgArea = document.getElementById('messages');
   msgArea.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">Loading...</div>';
 
-  const res = await fetch(`/api/history/${activeThemeSlug}/${activeSlug}`);
+  const res = await fetch(`/api/history/${activeThemeSlug}/${mySlug}`);
   const data = await res.json();
+
+  // User switched to a different topic while we were loading — discard
+  if (activeSlug !== mySlug) return;
+
   renderMessages(data.messages);
-  updateBadge(activeSlug, data.messages.length);
+  updateBadge(mySlug, data.messages.length);
+
+  // If there's an in-progress stream for this topic, re-attach it to the DOM
+  const stream = activeStreams.get(mySlug);
+  if (stream && !stream.done) {
+    const area = document.getElementById('messages');
+    const div = document.createElement('div');
+    div.className = 'message assistant';
+    div.innerHTML = `<div class="bubble">${renderMarkdown(stripMeta(stream.fullResponse))}</div><span class="timestamp">${formatTime(new Date().toISOString())}</span>`;
+    area.appendChild(div);
+    stream.assistantDiv = div;
+    document.getElementById('typing').classList.add('visible');
+    sending = true;
+    document.getElementById('sendBtn').disabled = true;
+    scrollToBottom(true);
+  } else {
+    sending = false;
+    document.getElementById('sendBtn').disabled = false;
+    document.getElementById('typing').classList.remove('visible');
+  }
 }
 
 function renderMessages(messages) {
@@ -558,13 +584,25 @@ function renderMessages(messages) {
     area.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">Start a conversation about this topic!</div>';
     return;
   }
-  area.innerHTML = messages.map(m => {
-    const content = m.role === 'assistant' ? renderMarkdown(m.content) : escapeHtml(m.content);
-    return `<div class="message ${m.role}">
-      <div class="bubble">${content}</div>
-      <span class="timestamp">${formatTime(m.timestamp)}</span>
-    </div>`;
-  }).join('');
+  area.innerHTML = '';
+  for (const m of messages) {
+    const div = document.createElement('div');
+    div.className = `message ${m.role}`;
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    if (m.role === 'assistant') {
+      try { bubble.innerHTML = renderMarkdown(m.content); }
+      catch(e) { bubble.textContent = m.content; }
+    } else {
+      bubble.innerHTML = escapeHtml(m.content);
+    }
+    const ts = document.createElement('span');
+    ts.className = 'timestamp';
+    ts.textContent = formatTime(m.timestamp);
+    div.appendChild(bubble);
+    div.appendChild(ts);
+    area.appendChild(div);
+  }
   userScrolledUp = false;
   scrollToBottom(true);
   area.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
@@ -628,8 +666,13 @@ async function sendMessage() {
   userScrolledUp = false;
   appendMessage('user', msg, new Date().toISOString());
 
+  const originSlug = activeSlug;
+  const originTheme = activeThemeSlug;
+  const stream = { fullResponse: '', assistantDiv: null, done: false };
+  activeStreams.set(originSlug, stream);
+
   try {
-    const res = await fetch(`/api/chat/${activeThemeSlug}/${activeSlug}`, {
+    const res = await fetch(`/api/chat/${originTheme}/${originSlug}`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({message: msg})
@@ -637,8 +680,6 @@ async function sendMessage() {
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
-    let fullResponse = '';
-    let assistantDiv = null;
 
     while (true) {
       const {done, value} = await reader.read();
@@ -650,23 +691,25 @@ async function sendMessage() {
         try {
           const data = JSON.parse(line.slice(6));
           if (data.type === 'chunk') {
-            fullResponse += data.content;
-            if (!assistantDiv) {
-              const area = document.getElementById('messages');
-              assistantDiv = document.createElement('div');
-              assistantDiv.className = 'message assistant';
-              assistantDiv.innerHTML = `<div class="bubble"></div><span class="timestamp">${formatTime(new Date().toISOString())}</span>`;
-              area.appendChild(assistantDiv);
-              document.getElementById('typing').classList.remove('visible');
+            stream.fullResponse += data.content;
+            // Only update DOM if this topic is currently visible
+            if (activeSlug === originSlug) {
+              if (!stream.assistantDiv) {
+                const area = document.getElementById('messages');
+                stream.assistantDiv = document.createElement('div');
+                stream.assistantDiv.className = 'message assistant';
+                stream.assistantDiv.innerHTML = `<div class="bubble"></div><span class="timestamp">${formatTime(new Date().toISOString())}</span>`;
+                area.appendChild(stream.assistantDiv);
+                document.getElementById('typing').classList.remove('visible');
+              }
+              stream.assistantDiv.querySelector('.bubble').innerHTML = renderMarkdown(stripMeta(stream.fullResponse));
+              scrollToBottom();
             }
-            let displayText = stripMeta(fullResponse);
-            assistantDiv.querySelector('.bubble').innerHTML = renderMarkdown(displayText);
-            scrollToBottom();
           } else if (data.type === 'done') {
-            if (assistantDiv) {
-              let displayText = data.response || stripMeta(fullResponse);
-              assistantDiv.querySelector('.bubble').innerHTML = renderMarkdown(displayText);
-              assistantDiv.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+            if (stream.assistantDiv) {
+              let displayText = data.response || stripMeta(stream.fullResponse);
+              stream.assistantDiv.querySelector('.bubble').innerHTML = renderMarkdown(displayText);
+              stream.assistantDiv.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
             }
           }
         } catch(e) {}
@@ -674,12 +717,15 @@ async function sendMessage() {
     }
   } catch(e) {
     console.error('Chat error:', e);
-    document.getElementById('typing').classList.remove('visible');
   }
 
-  sending = false;
-  document.getElementById('sendBtn').disabled = false;
-  document.getElementById('typing').classList.remove('visible');
+  stream.done = true;
+  activeStreams.delete(originSlug);
+  if (activeSlug === originSlug) {
+    sending = false;
+    document.getElementById('sendBtn').disabled = false;
+    document.getElementById('typing').classList.remove('visible');
+  }
 }
 
 function stripMeta(text) {
