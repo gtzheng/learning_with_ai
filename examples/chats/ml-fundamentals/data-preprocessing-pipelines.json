@@ -1,0 +1,23 @@
+{
+  "topic": "Data Preprocessing Pipelines",
+  "topic_slug": "data-preprocessing-pipelines",
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "# Data Preprocessing Pipelines\n\n## What Is This Topic About?\n\nBefore any ML model can learn, raw data needs to be cleaned and transformed into a usable format. **Data preprocessing pipelines** are the structured workflows that handle this: missing value imputation, normalization, encoding, and splitting data for training and evaluation.\n\n---\n\n## Core Areas\n\n| Area | What it Solves |\n|---|---|\n| **Missing Value Handling** | Gaps in data that break models |\n| **Normalization & Scaling** | Features on wildly different scales |\n| **Categorical Encoding** | Converting text categories to numbers |\n| **Dataset Splitting** | Fair train/validation/test partitions |\n| **Pipeline Composition** | Reproducible, leak-free transformations |\n\n---\n\n## Suggested Learning Path\n\n```\nBEGINNER\n  1. Why preprocessing matters (what breaks without it)\n  2. Exploratory data analysis with pandas\n  3. Handling missing values (drop, fill, impute)\n  4. Encoding categorical variables (one-hot, label)\n  5. Scaling numerical features\n\nINTERMEDIATE\n  6. Building scikit-learn Pipelines\n  7. Handling class imbalance\n  8. Feature engineering basics\n\nADVANCED\n  9. Advanced imputation (KNN, iterative)\n  10. Preventing data leakage in pipelines\n```\n\n---\n\n## Starter Questions\n\n1. **Why can't you feed raw data directly into a model?**\n2. **How do you choose the right strategy for missing data?**\n3. **What is data leakage and why is it so dangerous?**\n\nPick a question or say \"start from the beginning\"!",
+      "timestamp": "2026-03-23T16:24:13.006834+00:00",
+      "meta": {
+        "key_concepts": [
+          "data preprocessing",
+          "missing values",
+          "normalization",
+          "categorical encoding",
+          "dataset splitting",
+          "pipelines"
+        ],
+        "frustration_detected": false,
+        "importance": "high"
+      }
+    }
+  ]
+}

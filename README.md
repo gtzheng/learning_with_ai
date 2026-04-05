@@ -19,13 +19,13 @@ An interactive AI-powered learning platform that lets you study any topic throug
 ## Install dependencies
 
 ```bash
-pip install fastapi uvicorn anthropic
+uv venv
+uv pip install fastapi uvicorn anthropic
 ```
 
 ## Run
 
 ```bash
-cd learning_platform
 python server.py
 ```
 

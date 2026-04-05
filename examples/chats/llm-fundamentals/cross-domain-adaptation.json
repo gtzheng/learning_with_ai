@@ -1,0 +1,22 @@
+{
+  "topic": "Cross-Domain Adaptation",
+  "topic_slug": "cross-domain-adaptation",
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "# Cross-Domain Adaptation for LLMs\n\n## What Is This Topic About?\n\nLLMs are pretrained on broad, general-purpose text. But real-world applications often need them to work well in **specialized domains** like medicine, law, or finance where the vocabulary and reasoning patterns differ significantly.\n\n**Cross-domain adaptation** is the process of taking a general pretrained model and making it effective in a target domain, while managing the **domain shift** between what the model originally learned and what it now needs to know.\n\n---\n\n## Suggested Learning Path\n\n```\nBEGINNER\n  1. What pretraining gives you and where it falls short\n  2. What domain shift looks like in practice\n\nINTERMEDIATE\n  3. Continued pretraining on domain-specific corpora\n  4. Parameter-efficient adaptation (LoRA, adapters)\n  5. Data curation strategies for target domains\n\nADVANCED\n  6. Continual learning and avoiding catastrophic forgetting\n  7. Zero-shot and few-shot domain transfer\n  8. Evaluating adapted models for domain fit\n```\n\n---\n\n## Starter Questions\n\n1. **What is domain shift, and why does it degrade LLM performance?**\n2. **When should you continue pretraining vs. just fine-tune?**\n3. **Can you adapt to a new domain cheaply using LoRA or prompting alone?**\n\nWhich question interests you most?",
+      "timestamp": "2026-03-20T22:11:48.576094+00:00",
+      "meta": {
+        "key_concepts": [
+          "domain shift",
+          "continued pretraining",
+          "fine-tuning",
+          "LoRA",
+          "domain adaptation"
+        ],
+        "frustration_detected": false,
+        "importance": "high"
+      }
+    }
+  ]
+}
