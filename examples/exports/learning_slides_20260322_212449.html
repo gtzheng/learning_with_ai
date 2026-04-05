@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Learning Slides — 2026-03-22</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+</head>
+<body>
+<div class="reveal"><div class="slides">
+<section>
+<h1>Learning Session</h1>
+<h3>2026-03-22</h3>
+<ul><li>Adversarial Attacks and Robustness</li><li>Compression and Quantization</li><li>Document-Level LLMs</li><li>Efficient Attention Mechanisms</li><li>Efficient Parameter Sharing</li><li>Fine-Tuning for Specific Domains</li><li>Model Fine-Tuning for Low-Resource Languages</li><li>Scalability in Training and Deployment</li><li>Transfer Learning across Domains</li></ul>
+</section><section><section><h1>Adversarial Attacks and Robustness</h1></section><section><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># Adversarial Attacks &amp; Robustness in LLMs 🛡️
+
+Welcome! This is one of the most exciting and critical areas in modern AI safety. Let's get you oriented.
+
+---
+
+## 🌐 What Is This Topic About?
+
+Large Language Models (LLMs) like GPT-4, Claude, and Llama are remarkably powerful — but they have **hidden vulnerabilities**. Just like a skilled hacker can exploit weaknesses in software, adversaries can craft specially designed inputs to **trick, manipulate, or break** these models in ways their creators never intended.
+
+This field studies:
+- **How** LLMs can be attacked (the vulnerabilities)
+- **Why** these attacks work (the underlying mechanics)
+- **How** to defend against them (robustness techniques)
+
+Think of it like this: an LLM is a very sophisticated lock, and adversarial research is about fi...</pre><p><small>Key concepts: adversarial attacks, LLM vulnerabilities, jailbreaking, prompt injection, robustness, red teaming, alignment, OWASP Top 10 for LLMs</small></p></section><section><h3>Q: What's the difference between a jailbreak and a prompt injection attack — and why does it matter?</h3><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># Jailbreaks vs. Prompt Injection: What's the Difference? 🔓
+
+Great question to start with — these two terms get mixed up constantly, even by experienced practitioners. Let me untangle them clearly.
+
+---
+
+## 🎯 The Core Distinction: *Who* is the attacker targeting?
+
+Think of it this way using a **bank analogy**:
+
+| | **Jailbreak** | **Prompt Injection** |
+|---|---|---|
+| **Analogy** | Convincing a bank teller to break their own rules | Slipping a fake note into a customer's transaction to hijack the teller's actions |
+| **Target** | The LLM's *values/alignment* | The LLM's *instruction-following behavior* |
+| **Attacker** | The end user | Often a third party (malicious content in the environment) |
+| **Goal** | Make the model abandon its safety training | Make the model follow *attacker's* i...</pre><p><small>Key concepts: jailbreaks, prompt injection, alignment bypass, instruction hijacking, LLM security, threat models</small></p></section><section><h2>Adversarial Attacks and Robustness — Key Concepts</h2><ul><li>adversarial attacks</li><li>LLM vulnerabilities</li><li>jailbreaking</li><li>prompt injection</li><li>robustness</li><li>red teaming</li><li>alignment</li><li>OWASP Top 10 for LLMs</li><li>jailbreaks</li><li>alignment bypass</li><li>instruction hijacking</li><li>LLM security</li><li>threat models</li></ul></section></section><section><section><h1>Compression and Quantization</h1></section><section><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># Welcome to Compression &amp; Quantization of LLMs! 🚀
+
+You've picked a **fascinating and highly practical** area of modern AI. As language models grow to billions of parameters, making them fit on real hardware — phones, laptops, edge devices — is one of the hottest engineering challenges today.
+
+---
+
+## 🗺️ What Is This Topic About?
+
+Large Language Models (LLMs) like GPT, LLaMA, and Mistral are *huge* — often requiring tens of gigabytes of memory just to load. **Compression and quantization** are techniques that shrink these models dramatically while preserving as much of their intelligence as possible.
+
+Think of it like this: instead of storing a photo in RAW format (massive, perfect quality), you save it as a JPEG (much smaller, nearly the same quality). We do something similar with model w...</pre><p><small>Key concepts: quantization, model compression, LLM deployment, memory efficiency, pruning, knowledge distillation, post-training quantization, bits and precision</small></p></section><section><h2>Compression and Quantization — Key Concepts</h2><ul><li>quantization</li><li>model compression</li><li>LLM deployment</li><li>memory efficiency</li><li>pruning</li><li>knowledge distillation</li><li>post-training quantization</li><li>bits and precision</li></ul></section></section><section><section><h1>Document-Level LLMs</h1></section><section><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># Welcome to Document-Level LLMs! 🚀
+
+Great choice of topic! This is one of the most exciting frontiers in AI research right now. Let me set you up for a great learning journey.
+
+---
+
+## 🗺️ What Is This Topic About?
+
+Large Language Models (LLMs) like GPT-4 or Claude are incredibly powerful, but they were originally designed to handle **short snippets of text** — a paragraph, a conversation turn, a short story. 
+
+**Document-Level LLMs** tackle a harder, more realistic challenge:
+&gt; *How do we get AI to read, understand, and generate **entire documents** — like a research paper, a legal contract, a novel, or a full codebase — while keeping everything coherent and contextually aware?*
+
+Think of it like the difference between:
+- 📝 Summarizing one paragraph (easy)
+- 📚 Reading an entire book and t...</pre><p><small>Key concepts: document-level LLMs, context windows, coherence, long-range dependencies, transformers, Longformer, RAG, attention mechanisms, learning path</small></p></section><section><h3>Q: "What actually happens to an LLM's coherence when it writes a long document?"</h3><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># What Happens to LLM Coherence in Long Documents? 📄
+
+Great question — and the answer is genuinely surprising! Let me build this up step by step.
+
+---
+
+## 🧠 First: What Do We Mean by "Coherence"?
+
+Before diving into failure modes, let's define coherence clearly. A **coherent document** has several properties:
+
+| Property | What It Means | Example |
+|---|---|---|
+| **Local coherence** | Adjacent sentences flow naturally | Paragraph reads smoothly |
+| **Global coherence** | The whole document has a consistent theme/argument | A paper's conclusion matches its intro |
+| **Coreference consistency** | Characters/entities stay consistent | "Alice" is always the same Alice |
+| **Discourse structure** | Ideas are organized logically | Arguments build on each other |
+
+Think of coherence like **archi...</pre><p><small>Key concepts: coherence, topic drift, lost in the middle, coreference consistency, context window, entity inconsistency, structural breakdown, repetition</small></p></section><section><h3>Q: If you were designing a system to write a coherent 10,000-word research paper, which failure mode worries you most — topic drift, lost-in-the-middle, entity inconsistency, or structural breakdown? Why</h3><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># My Answer: Structural Breakdown Worries Me Most 🏗️
+
+...but the real answer is more nuanced than picking one. Let me walk you through my reasoning — and I think you'll find it reveals something deep about *why* these problems are hard.
+
+---
+
+## 🎯 My Primary Concern: Structural Breakdown
+
+Here's my core argument:
+
+&gt; **Structural breakdown is the "root failure" — the others are often *symptoms* of it.**
+
+Think about what a research paper fundamentally *is*:
+
+```
+A research paper is not just words.
+It's an ARGUMENT with a SHAPE.
+
+    ┌─────────────────────────────────────┐
+    │  Problem exists                     │  ← Introduction
+    │       ↓                             │
+    │  Prior work didn't solve it         │  ← Related Work  
+    │       ↓                             │
+    │  Here'...</pre><p><small>Key concepts: structural breakdown, topic drift, lost in the middle, entity inconsistency, hierarchical generation, document coherence, two-stage generation</small></p></section><section><h3>Q: tell me about memory mechanisms</h3><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># Memory Mechanisms in Document-Level LLMs 🧠
+
+Great direction! Memory mechanisms are one of the most creative solution spaces in this field. Let me build this up from first principles.
+
+---
+
+## 🤔 Why Do LLMs Need External Memory?
+
+First, let's understand the problem clearly with an analogy:
+
+&gt; Imagine you're writing a 10,000-word paper, but you're only allowed to **see the last 2 pages** at any given time. Everything you wrote earlier? Gone from view.
+&gt;
+&gt; Now imagine you're allowed to keep a **sticky note** on your desk — a small notepad where you jot down key facts, decisions, and the overall plan.
+&gt;
+&gt; That sticky note is **memory**.
+
+The LLM's context window is the "2 pages you can see." Memory mechanisms are the "sticky note" — external structures that store and retrieve information bey...</pre><p><small>Key concepts: context window, KV cache, working memory, scratchpad, RAG, vector store, in-weights memory, recurrent memory transformer, document coherence</small></p></section><section><h2>Document-Level LLMs — Key Concepts</h2><ul><li>document-level LLMs</li><li>context windows</li><li>coherence</li><li>long-range dependencies</li><li>transformers</li><li>Longformer</li><li>RAG</li><li>attention mechanisms</li><li>learning path</li><li>topic drift</li><li>lost in the middle</li><li>coreference consistency</li><li>context window</li><li>entity inconsistency</li><li>structural breakdown</li><li>repetition</li><li>hierarchical generation</li><li>document coherence</li><li>two-stage generation</li><li>KV cache</li><li>working memory</li><li>scratchpad</li><li>vector store</li><li>in-weights memory</li><li>recurrent memory transformer</li></ul></section></section><section><section><h1>Efficient Attention Mechanisms</h1></section><section><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># Welcome to Efficient Attention Mechanisms! 🚀
+
+## What Is This Topic About?
+
+The **Transformer architecture** (used in GPT, BERT, and virtually every modern AI system) relies on a mechanism called **self-attention** — a powerful way for models to understand relationships between all parts of an input sequence.
+
+The problem? **Standard self-attention is expensive.** For a sequence of length *n*, it requires **O(n²) memory and compute**. Double the sequence length → quadruple the cost. This makes it painful to work with long documents, high-resolution images, or genomic sequences.
+
+**Efficient Attention Mechanisms** are clever techniques that approximate or restructure self-attention to achieve similar expressiveness at a fraction of the cost. This is one of the hottest areas in deep learni...</pre><p><small>Key concepts: self-attention, O(n²) complexity, sparse attention, axial attention, linear attention, Transformer architecture, Flash Attention, efficient transformers</small></p></section><section><h2>Efficient Attention Mechanisms — Key Concepts</h2><ul><li>self-attention</li><li>O(n²) complexity</li><li>sparse attention</li><li>axial attention</li><li>linear attention</li><li>Transformer architecture</li><li>Flash Attention</li><li>efficient transformers</li></ul></section></section><section><section><h1>Efficient Parameter Sharing</h1></section><section><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># Efficient Parameter Sharing: A Welcome Guide 🎓
+
+Welcome! You've picked a fascinating and highly practical topic that sits at the heart of modern deep learning and NLP. Let's get you oriented.
+
+---
+
+## 🗺️ What Is This Topic About?
+
+**Efficient Parameter Sharing** is about training a single model whose parameters (weights) are *shared* across multiple tasks — while still allowing each task to have its own specialized behavior.
+
+Think of it like a **multilingual translator** who has a deep shared understanding of language structure, but adjusts their vocabulary and style depending on whether they're translating legal documents or poetry. The core knowledge is shared; the adaptation is task-specific.
+
+This matters because:
+- Training a **separate model per task is expensive** (memory, comput...</pre><p><small>Key concepts: parameter sharing, fine-tuning, transfer learning, multi-task learning, LoRA, adapter layers, PEFT, pretrained models</small></p></section><section><h2>Efficient Parameter Sharing — Key Concepts</h2><ul><li>parameter sharing</li><li>fine-tuning</li><li>transfer learning</li><li>multi-task learning</li><li>LoRA</li><li>adapter layers</li><li>PEFT</li><li>pretrained models</li></ul></section></section><section><section><h1>Fine-Tuning for Specific Domains</h1></section><section><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># Fine-Tuning LLMs for Specific Domains 🎯
+
+Welcome! This is a fascinating and highly practical area of AI/ML. Let me get you oriented.
+
+---
+
+## 🗺️ What Is This Topic About?
+
+Large Language Models (LLMs) like GPT-4, LLaMA, or Mistral are trained on *massive, general-purpose* datasets. They're impressively broad — but they can struggle with:
+
+- **Specialized jargon** (e.g., medical, legal, financial terms)
+- **Domain-specific reasoning** (e.g., interpreting lab results, reading contracts)
+- **Specific tone/style** (e.g., a company's brand voice, academic writing)
+
+**Fine-tuning** is the process of taking a pre-trained LLM and *further training it* on a smaller, domain-specific dataset so it becomes an expert in that niche — like turning a well-read generalist into a specialized consultant.
+
+...</pre><p><small>Key concepts: fine-tuning, domain adaptation, pre-trained LLMs, LoRA, PEFT, instruction tuning, dataset curation, prompt engineering vs fine-tuning</small></p></section><section><h3>Q: go through the beginner materials first</h3><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># 🟢 Beginner Level: Building Your Foundation
+
+Perfect! Let's build this up from the ground floor. We'll go through **3 foundational concepts** in order:
+
+---
+
+## Concept 1: How LLMs Work (The 30-Second Version)
+
+Before we talk about fine-tuning, you need a mental model of what an LLM actually *is*.
+
+**At its core, an LLM is trained to do one thing:**
+&gt; *Given some text, predict what comes next.*
+
+That's it. But to do this well across billions of examples, the model is forced to learn:
+- Grammar and syntax
+- Facts about the world
+- Reasoning patterns
+- Writing styles
+
+This initial training phase is called **pre-training**, and it's done by big labs (OpenAI, Meta, Google) on **trillions of tokens** of text from the internet, books, code, etc.
+
+&gt; 💡 **Analogy:** Pre-training is like a person s...</pre><p><small>Key concepts: pre-training, fine-tuning, prompt engineering vs fine-tuning, domain-specific datasets, Hugging Face Trainer API, tokenization, training loop</small></p></section><section><h3>Q: What does the training data look like for a domain-specific fine-tune?</h3><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># 📄 Training Data for Domain-Specific Fine-Tuning
+
+Great question — this is arguably the **most important factor** in whether your fine-tune succeeds or fails. Bad data = bad model, no matter how clever your training setup is.
+
+---
+
+## The Big Picture: What Are You Teaching the Model?
+
+First, ask yourself: *what behavior do I want the model to learn?*
+
+There are **3 main training data formats**, each teaching something different:
+
+```
+1. Raw Text ("learn to speak like this domain")
+2. Instruction-Response Pairs ("learn to follow domain-specific instructions")
+3. Conversation Format ("learn to chat in this domain's context")
+```
+
+Let's break each one down.
+
+---
+
+## Format 1: Raw Text (Continued Pre-training)
+
+This is the **simplest format** — just raw domain text, no structure needed.
+
+**Us...</pre><p><small>Key concepts: raw text format, instruction-response pairs, conversation format, data quality rules, synthetic data generation, data quantity guidelines, ChatML format, Alpaca format</small></p></section><section><h3>Q: why do people define perplexity as e^loss?</h3><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># 🔢 Why Is Perplexity Defined as e^loss?
+
+Great question — this trips up a lot of people because it feels like it came out of nowhere. Let me build up the intuition from scratch.
+
+---
+
+## Step 1: What Does "Loss" Actually Mean During Training?
+
+When we train an LLM, the loss function used is called **Cross-Entropy Loss**.
+
+At each step, the model looks at some text and tries to predict the next token. Cross-entropy measures **how wrong the model's prediction was**:
+
+```
+Text:  "The patient has acute ___"
+
+Model's guesses (probability distribution):
+  "myocardial"  → 0.45  ← Model thinks this is most likely
+  "kidney"      → 0.20
+  "liver"       → 0.15
+  "chronic"     → 0.10
+  ... (other tokens) → 0.10
+
+Actual next word: "myocardial" ✅
+
+Cross-entropy loss = -log(0.45) ≈ 0.799
+```
+
+The formu...</pre><p><small>Key concepts: cross-entropy loss, perplexity, natural logarithm, probability, model evaluation</small></p></section><section><h3>Q: what is geometric mean?</h3><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># 📐 Geometric Mean — Let's Build This From Scratch
+
+No worries — this is a pure math concept that's worth understanding clearly. Let me build it up step by step.
+
+---
+
+## Start With the Regular Mean (Arithmetic Mean)
+
+You already know this one:
+
+```
+Numbers: 2, 4, 6, 8
+
+Arithmetic mean = (2 + 4 + 6 + 8) / 4
+                = 20 / 4
+                = 5
+
+Recipe: ADD them all up, then DIVIDE by count
+```
+
+This works great for most situations. But there are cases where it breaks down.
+
+---
+
+## Where Arithmetic Mean Goes Wrong
+
+Imagine you're tracking how a bacteria population **multiplies** over 3 days:
+
+```
+Day 1: Population doubles  → growth factor 2x
+Day 2: Population triples  → growth factor 3x  
+Day 3: Population doubles  → growth factor 2x
+
+What was the "average" daily growth factor?
+```...</pre><p><small>Key concepts: geometric mean, arithmetic mean, perplexity, cross-entropy loss, probability averaging</small></p></section><section><h3>Q: how to calculate ROUGE</h3><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># 📏 How to Calculate ROUGE — From Scratch
+
+Great question! Let's build up the intuition before touching any code. ROUGE is simpler than it sounds once you see the core idea.
+
+---
+
+## What Does ROUGE Actually Stand For?
+
+**R**ecall-**O**riented **U**nderstudy for **G**isting **E**valuation
+
+Don't worry about the name. The core idea is just:
+
+&gt; **"How much of the reference answer appeared in the model's output?"**
+
+---
+
+## The Core Concept: Word Overlap
+
+Imagine:
+```
+Reference (expert answer): "the patient has high blood pressure"
+Model output:              "the patient has elevated blood pressure"
+
+Which words appear in BOTH?
+  "the"      ✅
+  "patient"  ✅
+  "has"      ✅
+  "high"     ❌ (model said "elevated")
+  "blood"    ✅
+  "pressure" ✅
+
+Overlap = 5 out of 6 reference words appeared in the...</pre><p><small>Key concepts: ROUGE-1, ROUGE-2, ROUGE-L, precision, recall, F1, longest common subsequence, bigrams, unigrams</small></p></section><section><h3>Q: jump into LoRA and efficient fine-tuning</h3><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># ⚡ LoRA &amp; Efficient Fine-Tuning — Train Without a Supercomputer
+
+This is where things get really exciting. LoRA is probably the most important practical innovation in fine-tuning in the last few years. Let's build up to it properly.
+
+---
+
+## The Problem: Full Fine-Tuning is Expensive
+
+When we fine-tune a model the "normal" way, we update **every single parameter** in the model:
+
+```
+Model Size        Parameters      GPU Memory Needed
+──────────────────────────────────────────────────
+GPT-2 (small)       117 million     ~5 GB
+LLaMA 7B          7,000 million    ~28 GB
+LLaMA 13B        13,000 million    ~52 GB
+GPT-3            175,000 million   ~700 GB  😱
+
+A high-end consumer GPU (RTX 4090) has: 24 GB
+```
+
+&gt; 💡 **The problem is clear:** Full fine-tuning of anything useful is out of reach for ...</pre><p><small>Key concepts: LoRA, QLoRA, low-rank adaptation, PEFT, quantization, attention matrices, trainable parameters, efficient fine-tuning</small></p></section><section><h3>Q: what causes model to drift</h3><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># 🌊 What Causes Model Drift?
+
+Great question — and an important one for production systems. Let's build up the intuition clearly.
+
+---
+
+## The Core Idea: The World Changes, But Your Model Doesn't
+
+When you fine-tune a model, you're essentially taking a **snapshot of knowledge and behavior** at a specific point in time.
+
+&gt; 💡 **Analogy:** Imagine hiring an expert consultant, training them thoroughly in 2023, then asking them to advise you in 2026 — without ever letting them read any new information. Their advice would gradually become outdated, even though they haven't forgotten anything.
+
+That's model drift in a nutshell.
+
+---
+
+## The 4 Main Causes of Model Drift
+
+```
+Cause 1: Data Drift      → The INPUT world changes
+Cause 2: Concept Drift   → The correct ANSWERS change  
+Cause 3: Feature ...</pre><p><small>Key concepts: model drift, data drift, concept drift, language drift, feedback drift, drift detection, KS test, retraining loop</small></p></section><section><h2>Fine-Tuning for Specific Domains — Key Concepts</h2><ul><li>fine-tuning</li><li>domain adaptation</li><li>pre-trained LLMs</li><li>LoRA</li><li>PEFT</li><li>instruction tuning</li><li>dataset curation</li><li>prompt engineering vs fine-tuning</li><li>pre-training</li><li>domain-specific datasets</li><li>Hugging Face Trainer API</li><li>tokenization</li><li>training loop</li><li>raw text format</li><li>instruction-response pairs</li><li>conversation format</li><li>data quality rules</li><li>synthetic data generation</li><li>data quantity guidelines</li><li>ChatML format</li><li>Alpaca format</li><li>cross-entropy loss</li><li>perplexity</li><li>natural logarithm</li><li>probability</li><li>model evaluation</li><li>geometric mean</li><li>arithmetic mean</li><li>probability averaging</li><li>ROUGE-1</li><li>ROUGE-2</li><li>ROUGE-L</li><li>precision</li><li>recall</li><li>F1</li><li>longest common subsequence</li><li>bigrams</li><li>unigrams</li><li>QLoRA</li><li>low-rank adaptation</li><li>quantization</li><li>attention matrices</li><li>trainable parameters</li><li>efficient fine-tuning</li><li>model drift</li><li>data drift</li><li>concept drift</li><li>language drift</li><li>feedback drift</li><li>drift detection</li><li>KS test</li><li>retraining loop</li></ul></section></section><section><section><h1>Model Fine-Tuning for Low-Resource Languages</h1></section><section><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># Welcome to Model Fine-Tuning for Low-Resource Languages! 🌍
+
+You've picked a fascinating and *highly impactful* topic. Let's get you oriented!
+
+---
+
+## 🗺️ What Is This Topic About?
+
+Imagine you have a powerful AI language model (like GPT or LLaMA) trained mostly on English text. Now you want it to understand **Swahili, Quechua, or Yoruba** — languages with very little training data available. How do you make that work?
+
+That's exactly what this field tackles. **Low-resource language fine-tuning** combines:
+- 🤖 **Large Language Models (LLMs)** — pre-trained AI systems
+- 🔧 **Fine-tuning techniques** — adapting models to specific tasks/languages
+- 📉 **Data scarcity solutions** — clever tricks when you have hundreds (not millions) of examples
+
+This matters enormously because **~7,000 language...</pre><p><small>Key concepts: low-resource languages, fine-tuning, large language models, transfer learning, multilingual models, XLM-RoBERTa, LoRA, data scarcity, cross-lingual transfer, parameter-efficient fine-tuning</small></p></section><section><h2>Model Fine-Tuning for Low-Resource Languages — Key Concepts</h2><ul><li>low-resource languages</li><li>fine-tuning</li><li>large language models</li><li>transfer learning</li><li>multilingual models</li><li>XLM-RoBERTa</li><li>LoRA</li><li>data scarcity</li><li>cross-lingual transfer</li><li>parameter-efficient fine-tuning</li></ul></section></section><section><section><h1>Scalability in Training and Deployment</h1></section><section><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># 🚀 Scalability in LLM Training &amp; Deployment
+
+Welcome! This is one of the most exciting and practically important topics in modern AI. Let's set you up for a great learning journey.
+
+---
+
+## 🗺️ What Is This Topic About?
+
+As Large Language Models (LLMs) grow from millions to **hundreds of billions of parameters**, training and serving them becomes a massive engineering challenge. This topic covers:
+
+- **How to train models too big to fit on a single GPU** (distributed training)
+- **How to serve these models efficiently** to millions of users
+- **Strategies to reduce cost and latency** without sacrificing quality
+- **The infrastructure and systems** that power models like GPT-4, LLaMA, and Gemini
+
+Think of it like this: training a small model is like cooking a meal in your kitchen. Training ...</pre><p><small>Key concepts: LLM scalability overview, distributed training, inference optimization, scaling laws, data parallelism, model parallelism, learning resources, learning path</small></p></section><section><h2>Scalability in Training and Deployment — Key Concepts</h2><ul><li>LLM scalability overview</li><li>distributed training</li><li>inference optimization</li><li>scaling laws</li><li>data parallelism</li><li>model parallelism</li><li>learning resources</li><li>learning path</li></ul></section></section><section><section><h1>Transfer Learning across Domains</h1></section><section><pre style='text-align:left;font-size:0.5em;white-space:pre-wrap;'># Transfer Learning Across Domains with LLMs 🚀
+
+Welcome! You've picked a fascinating and highly practical topic that sits at the intersection of modern AI research and real-world deployment. Let's get you oriented.
+
+---
+
+## 🌍 What Is This Topic About?
+
+Large Language Models (LLMs) like GPT, BERT, or LLaMA are trained on massive general-purpose datasets. But what happens when you need them to work well in a **specialized domain** — like medical diagnosis, legal contracts, or financial analysis?
+
+**Transfer learning across domains** is the art and science of:
+- Taking a model trained in one context (source domain)
+- Adapting it to perform well in a different context (target domain)
+- While overcoming the challenges of **domain shift** (the gap between how language is used in each domain)
+
+Th...</pre><p><small>Key concepts: transfer learning, domain shift, LLMs, fine-tuning, domain adaptation, DAPT, LoRA</small></p></section><section><h2>Transfer Learning across Domains — Key Concepts</h2><ul><li>transfer learning</li><li>domain shift</li><li>LLMs</li><li>fine-tuning</li><li>domain adaptation</li><li>DAPT</li><li>LoRA</li></ul></section></section><section><h1>Key Takeaways</h1><ul><li>adversarial attacks</li><li>LLM vulnerabilities</li><li>jailbreaking</li><li>prompt injection</li><li>robustness</li><li>red teaming</li><li>alignment</li><li>OWASP Top 10 for LLMs</li><li>jailbreaks</li><li>alignment bypass</li><li>instruction hijacking</li><li>LLM security</li><li>threat models</li><li>quantization</li><li>model compression</li><li>LLM deployment</li><li>memory efficiency</li><li>pruning</li><li>knowledge distillation</li><li>post-training quantization</li><li>bits and precision</li><li>document-level LLMs</li><li>context windows</li><li>coherence</li><li>long-range dependencies</li><li>transformers</li><li>Longformer</li><li>RAG</li><li>attention mechanisms</li><li>learning path</li></ul></section>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>Reveal.initialize({hash: true});</script>
+</body>
+</html>

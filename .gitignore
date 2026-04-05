@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Environment
+.env
+
+# Learning data (user-generated, keep examples/ for demo)
+learning_data/chats/
+learning_data/exports/
+learning_data/learning_notes.md
+
+# OS
+.DS_Store

@@ -1,0 +1,51 @@
+{
+  "model": "claude-sonnet-4-6",
+  "max_tokens": 4096,
+  "host": "0.0.0.0",
+  "port": 8765,
+  "themes": {
+    "llm-fundamentals": {
+      "name": "LLM Fundamentals",
+      "topics": {
+        "Efficient Attention Mechanisms": "Detail techniques like sparse attention and axial attention that aim to make self-attention mechanisms more memory and computation efficient.",
+        "Document-Level LLMs": "Explore adaptations of LLMs to process and generate entire documents, addressing challenges in coherence and context.",
+        "Efficient Parameter Sharing": "Discuss methods for sharing model parameters across different tasks while ensuring task-specific fine-tuning.",
+        "Transfer Learning across Domains": "Explain strategies for transferring LLMs from one domain to another, addressing domain shift and adaptation challenges.",
+        "Fine-Tuning for Specific Domains": "Discuss techniques for fine-tuning LLMs to adapt them to domain-specific jargon, context, and style.",
+        "Scalability in Training and Deployment": "Elaborate on strategies to scale up LLM training and deployment to accommodate larger models and data.",
+        "Multilingual and Cross-Lingual LLMs": "Explore the challenges and techniques behind developing LLMs capable of understanding and generating text in multiple languages.",
+        "Adversarial Attacks and Robustness": "Discuss potential vulnerabilities of LLMs to adversarial attacks and methods to enhance their robustness against such attacks.",
+        "Compression and Quantization": "Explore techniques to compress and quantize LLMs, making them more memory-efficient for deployment.",
+        "Handling Long Text Sequences": "Detail methods to handle long input sequences in LLMs efficiently, avoiding computational bottlenecks.",
+        "Model Fine-Tuning for Low-Resource Languages": "Explore techniques for fine-tuning LLMs with limited data available in low-resource languages.",
+        "Interpretable LLM Outputs": "Discuss methods to interpret LLM outputs and generate human-readable explanations for model predictions.",
+        "Transfer Learning Beyond Text": "Explore applications of transfer learning from LLMs to other modalities like images and audio, enabling multimodal AI.",
+        "Efficient Hardware Acceleration": "Dive into hardware accelerators like GPUs and TPUs, optimizing LLM inference and training for various hardware setups.",
+        "Knowledge Graph Integration with LLMs": "Explore methods for integrating knowledge graphs with LLMs to enhance their understanding of facts and relationships.",
+        "Tokenization": "Understand tokenization techniques behind LLMs"
+      }
+    },
+    "ml-fundamentals": {
+      "name": "ML Fundamentals",
+      "topics": {
+        "Data Collection and Labeling": "Discuss the challenges and strategies for collecting and curating large-scale datasets, considering factors like bias and quality. Address various data labeling techniques, including manual, semi-automated, and crowdsourcing approaches.",
+        "Data Structures": "Delve into the data preprocessing steps required before model training. Cover data transformation, normalization, encoding categorical variables, handling missing values, and splitting datasets for training, validation, and testing.",
+        "Model Evaluation Metrics": "Explain a variety of evaluation metrics used to gauge model performance, such as accuracy, precision, recall, F1-score, ROC-AUC, and more. Illustrate how the choice of metrics depends on the specific problem and business context.",
+        "Feature Engineering and Selection": "Discuss the importance of crafting relevant features from raw data for model training. Explore techniques for selecting meaningful features and handling high-dimensional data.",
+        "A/B Testing for Model Evaluation": "Detail techniques for enhancing model interpretability, especially for complex models like large language models. Discuss techniques like attention visualization, saliency maps, and SHAP values to provide insights into model decisions.",
+        "Debugging and Troubleshooting in Production": "Explore techniques for diagnosing and addressing issues that arise when models are deployed at scale. Discuss methods for identifying performance bottlenecks and data inconsistencies.",
+        "Version Control": "Elaborate on the importance of version control for managing models throughout their lifecycle. Cover versioning not only for code but also for model weights, configurations, and hyperparameters.",
+        "Multi-Modal Learning Integration": "Discuss the integration of multiple modalities, such as text, images, and audio, in large language models. Explore how such models can learn from diverse data sources to enhance their capabilities.",
+        "Handling Bias and Fairness": "Address the challenge of bias in large language models and NLP applications. Discuss techniques for detecting and mitigating bias, ensuring fairness and ethical considerations in model predictions.",
+        "GPU Utilization and Cloud Computing": "Discuss the advantages of utilizing GPUs for accelerating model training and inference. Explore cloud platforms like AWS, GCP, and Azure, emphasizing their role in scaling computational resources for large-scale language modeling tasks.",
+        "Scalability and Performance Optimization": "Highlight strategies for optimizing ML algorithms to handle large datasets efficiently. Discuss techniques for parallel processing, distributed computing, and utilizing GPU resources.",
+        "Deployment Strategies at Scale": "Dive into the deployment considerations for large language models. Cover topics like containerization (e.g., Docker), serverless architectures, and microservices, focusing on creating reliable, scalable, and maintainable deployments.",
+        "Interpretable ML Models": "Detail techniques for enhancing model interpretability, especially for complex models like large language models. Discuss techniques like attention visualization, saliency maps, and SHAP values to provide insights into model decisions."
+      }
+    }
+  },
+  "prompts": {
+    "system": "You are an expert tutor specializing in \"{topic}\". Your role is to help the user deeply understand this subject through clear, patient, and adaptive teaching.\n\nTEACHING APPROACH:\n- Start with foundational concepts before advancing\n- Use analogies, real-world examples, and code samples where appropriate\n- Practice progressive disclosure: don't overwhelm with details upfront\n- When the user seems confused, try a completely different explanation angle\n- Encourage curiosity by suggesting related concepts to explore\n\nFRUSTRATION DETECTION:\nWatch for these signals in the user's messages:\n- Repeated questions about the same concept\n- Phrases like \"I don't understand\", \"I'm confused\", \"still lost\", \"what do you mean\"\n- Short frustrated responses like \"??\", \"huh\", \"that doesn't help\"\n- Explicitly stating frustration or difficulty\nWhen detected, respond with extra patience, simpler language, and a fresh approach.\n\nRESPONSE FORMAT:\nWrite your teaching response directly in markdown format. Do NOT wrap it in JSON.\nAt the very end of your response, on a new line, append exactly one metadata line in this format:\n\n<!--META:{\"key_concepts\":[\"concept1\",\"concept2\"],\"frustration_detected\":false,\"importance\":\"high\"}-->\n\nRules for the metadata line:\n- It MUST be the very last line of your response\n- \"importance\": \"high\" for core concepts/definitions/breakthroughs, \"medium\" or \"low\" otherwise\n- \"frustration_detected\": true when user shows confusion signals\n- \"key_concepts\": list the main concepts covered\n- The metadata line must be valid JSON inside the comment markers",
+    "intro": "The user just opened this topic for the first time. Provide: 1) A brief overview of the topic, 2) 3-5 most common and relevant learning resources (textbooks, courses, papers, documentation), 3) A suggested learning path from beginner to advanced, 4) 2-3 starter questions the user might want to explore. Set importance to 'high'."
+  }
+}

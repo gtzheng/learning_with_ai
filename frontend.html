@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning Hub</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<style>
+:root {
+  --primary: #3b82f6;
+  --primary-light: #dbeafe;
+  --primary-dark: #1d4ed8;
+  --bg: #f8fafc;
+  --sidebar-bg: #ffffff;
+  --chat-bg: #f1f5f9;
+  --user-bubble: #3b82f6;
+  --user-text: #ffffff;
+  --assistant-bubble: #ffffff;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --radius: 12px;
+  --sidebar-width: 280px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+.sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  z-index: 10;
+}
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sidebar-header h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+.sidebar-header .icon { font-size: 1.4rem; }
+/* Theme selector */
+.theme-section {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.theme-selector {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.theme-selector select {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  background: white;
+  outline: none;
+  cursor: pointer;
+}
+.theme-selector select:focus { border-color: var(--primary); }
+.theme-selector .btn-icon {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.theme-selector .btn-icon:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+.topic-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+.topic-card {
+  padding: 12px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.15s ease;
+  border: 2px solid transparent;
+  font-size: 0.875rem;
+}
+.topic-card:hover { background: var(--primary-light); }
+.topic-card.active {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  font-weight: 600;
+}
+.topic-card .badge {
+  background: var(--primary);
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 7px;
+  border-radius: 10px;
+  min-width: 22px;
+  text-align: center;
+}
+.sidebar-bottom {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sidebar-bottom button {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.sidebar-bottom button:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+.sidebar-bottom button:disabled { opacity: 0.5; cursor: not-allowed; }
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-width: 0;
+}
+.chat-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.chat-header h2 { font-size: 1.1rem; font-weight: 600; }
+.chat-header .breadcrumb { font-size: 0.8rem; color: var(--text-muted); }
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--chat-bg);
+}
+.message {
+  display: flex;
+  flex-direction: column;
+  max-width: 75%;
+  animation: slideIn 0.2s ease;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.message.user { align-self: flex-end; }
+.message.assistant { align-self: flex-start; }
+.message .bubble {
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  line-height: 1.55;
+  font-size: 0.925rem;
+}
+.message.user .bubble {
+  background: var(--user-bubble);
+  color: var(--user-text);
+  border-bottom-right-radius: 4px;
+}
+.message.assistant .bubble {
+  background: var(--assistant-bubble);
+  border-bottom-left-radius: 4px;
+}
+.message .bubble h1, .message .bubble h2, .message .bubble h3 { margin-top: 12px; margin-bottom: 6px; }
+.message .bubble h1:first-child, .message .bubble h2:first-child, .message .bubble h3:first-child { margin-top: 0; }
+.message .bubble h1 { font-size: 1.15rem; }
+.message .bubble h2 { font-size: 1.05rem; }
+.message .bubble h3 { font-size: 0.95rem; }
+.message .bubble p { margin-bottom: 8px; }
+.message .bubble p:last-child { margin-bottom: 0; }
+.message .bubble ul, .message .bubble ol { padding-left: 20px; margin-bottom: 8px; }
+.message .bubble li { margin-bottom: 4px; }
+.message .bubble pre {
+  background: #1e293b; color: #e2e8f0; padding: 12px;
+  border-radius: 8px; overflow-x: auto; margin: 8px 0; font-size: 0.85rem;
+}
+.message .bubble code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85em; }
+.message .bubble :not(pre) > code { background: #f1f5f9; padding: 2px 5px; border-radius: 4px; color: #e11d48; }
+.message.user .bubble :not(pre) > code { background: rgba(255,255,255,0.2); color: white; }
+.message .timestamp { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; padding: 0 4px; }
+.message.user .timestamp { text-align: right; }
+.typing {
+  display: none; align-self: flex-start; padding: 14px 18px;
+  background: var(--assistant-bubble); border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.typing.visible { display: flex; gap: 4px; align-items: center; }
+.typing span {
+  width: 8px; height: 8px; background: var(--text-muted);
+  border-radius: 50%; animation: pulse 1.2s ease infinite;
+}
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pulse {
+  0%, 60%, 100% { transform: scale(0.6); opacity: 0.4; }
+  30% { transform: scale(1); opacity: 1; }
+}
+.input-area {
+  padding: 16px 24px; background: white; border-top: 1px solid var(--border);
+  display: flex; gap: 12px; align-items: flex-end;
+}
+.input-area textarea {
+  flex: 1; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 12px 16px; font-size: 0.925rem; font-family: inherit;
+  resize: none; max-height: 120px; line-height: 1.4; outline: none;
+  transition: border-color 0.15s;
+}
+.input-area textarea:focus { border-color: var(--primary); }
+.input-area button {
+  background: var(--primary); color: white; border: none; border-radius: var(--radius);
+  padding: 12px 20px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  transition: background 0.15s; white-space: nowrap;
+}
+.input-area button:hover { background: var(--primary-dark); }
+.input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
+/* Modals */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  z-index: 100; justify-content: center; align-items: center;
+}
+.modal-overlay.visible { display: flex; }
+.modal {
+  background: white; border-radius: 16px; width: 90%; max-width: 700px;
+  max-height: 80vh; display: flex; flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+.modal-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.modal-header h2 { font-size: 1.1rem; }
+.modal-header button {
+  background: none; border: none; font-size: 1.3rem; cursor: pointer;
+  color: var(--text-muted); padding: 4px 8px; border-radius: 6px;
+}
+.modal-header button:hover { background: var(--chat-bg); }
+.modal-body {
+  padding: 20px; overflow-y: auto; font-size: 0.9rem; line-height: 1.6;
+}
+.modal-body h1 { font-size: 1.2rem; margin: 16px 0 8px; }
+.modal-body h2 { font-size: 1.05rem; margin: 14px 0 6px; color: var(--primary-dark); }
+.modal-body h3 { font-size: 0.95rem; margin: 10px 0 4px; }
+.modal-body ul { padding-left: 20px; }
+.modal-body li { margin-bottom: 4px; }
+/* Form elements in modals */
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; }
+.form-group input, .form-group textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 0.9rem; font-family: inherit; outline: none;
+}
+.form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
+.form-group textarea { resize: vertical; min-height: 120px; }
+.form-group .hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+.form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+.form-actions button {
+  padding: 10px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-primary { background: var(--primary); color: white; border: none; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary { background: white; color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--chat-bg); }
+/* Hamburger for mobile */
+.hamburger { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 4px; }
+.welcome {
+  flex: 1; display: flex; justify-content: center; align-items: center;
+  color: var(--text-muted); font-size: 1.1rem;
+}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+@media (max-width: 768px) {
+  .sidebar { position: fixed; left: -100%; transition: left 0.25s ease; width: 280px; box-shadow: var(--shadow-md); }
+  .sidebar.open { left: 0; }
+  .hamburger { display: block; }
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span class="icon">📚</span>
+    <h1>Learning Hub</h1>
+  </div>
+  <div class="theme-section">
+    <div class="theme-selector">
+      <select id="themeSelect" onchange="switchTheme(this.value)"></select>
+      <button class="btn-icon" onclick="showNewThemeModal()" title="Create new theme">+</button>
+    </div>
+  </div>
+  <div class="topic-list" id="topicList"></div>
+  <div class="sidebar-bottom">
+    <button onclick="showNotes()">📝 View Notes</button>
+    <button onclick="exportSlides(this)" id="exportBtn">📊 Export Slides</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="chat-header" id="chatHeader">
+    <div>
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <h2 id="topicTitle">Select a topic</h2>
+    </div>
+    <span class="breadcrumb" id="breadcrumb">Learning Hub</span>
+  </div>
+  <div class="messages" id="messages">
+    <div class="welcome" id="welcome">Select a topic from the sidebar to start learning</div>
+  </div>
+  <div class="typing" id="typing"><span></span><span></span><span></span></div>
+  <div class="input-area">
+    <textarea id="input" placeholder="Ask a question..." rows="1" onkeydown="handleKey(event)" oninput="autoGrow(this)"></textarea>
+    <button id="sendBtn" onclick="sendMessage()">Send</button>
+  </div>
+</main>
+
+<!-- Notes modal -->
+<div class="modal-overlay" id="notesModal" onclick="closeModal(event, 'notesModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>📝 Learning Notes</h2>
+      <button onclick="document.getElementById('notesModal').classList.remove('visible')">✕</button>
+    </div>
+    <div class="modal-body" id="notesContent">Loading...</div>
+  </div>
+</div>
+
+<!-- New theme modal -->
+<div class="modal-overlay" id="newThemeModal" onclick="closeModal(event, 'newThemeModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Create New Theme</h2>
+      <button onclick="document.getElementById('newThemeModal').classList.remove('visible')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Theme Name</label>
+        <input type="text" id="newThemeName" placeholder="e.g. Deep Learning, NLP Basics, MLOps">
+      </div>
+      <div class="form-group">
+        <label>Topics</label>
+        <textarea id="newThemeTopics" placeholder="One topic per line. Use 'Topic Name: Description' format.&#10;&#10;Example:&#10;Neural Networks: Explore the building blocks of deep learning&#10;Backpropagation: Understand how gradients flow through networks"></textarea>
+        <div class="hint">One topic per line. Format: Topic Name: Description</div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="document.getElementById('newThemeModal').classList.remove('visible')">Cancel</button>
+        <button class="btn-primary" id="createThemeBtn" onclick="createTheme()">Create Theme</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add topic modal -->
+<div class="modal-overlay" id="addTopicModal" onclick="closeModal(event, 'addTopicModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Add Topic</h2>
+      <button onclick="document.getElementById('addTopicModal').classList.remove('visible')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Topic Name</label>
+        <input type="text" id="addTopicName" placeholder="e.g. Attention Mechanisms">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" id="addTopicDesc" placeholder="A brief description of what to learn about this topic">
+      </div>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="document.getElementById('addTopicModal').classList.remove('visible')">Cancel</button>
+        <button class="btn-primary" onclick="addTopic()">Add Topic</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const md = marked.marked || marked;
+if (typeof md.setOptions === 'function') {
+  md.setOptions({
+    highlight: function(code, lang) {
+      if (lang && hljs.getLanguage(lang)) return hljs.highlight(code, {language: lang}).value;
+      return hljs.highlightAuto(code).value;
+    }
+  });
+}
+
+let themes = [];
+let activeThemeSlug = null;
+let topics = [];
+let activeTopic = null;
+let activeSlug = null;
+let sending = false;
+
+function slugify(text) {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+function formatTime(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+}
+
+function renderMarkdown(text) {
+  if (typeof md === 'function') return md(text);
+  if (md.parse) return md.parse(text);
+  return text;
+}
+
+// --- Init ---
+
+async function init() {
+  const res = await fetch('/api/themes');
+  const data = await res.json();
+  themes = data.themes;
+  renderThemeSelect();
+  if (themes.length > 0) {
+    await switchTheme(themes[0].slug);
+  }
+}
+
+function renderThemeSelect() {
+  const select = document.getElementById('themeSelect');
+  select.innerHTML = themes.map(t =>
+    `<option value="${t.slug}" ${t.slug === activeThemeSlug ? 'selected' : ''}>${t.name} (${t.topic_count})</option>`
+  ).join('');
+}
+
+async function switchTheme(themeSlug) {
+  activeThemeSlug = themeSlug;
+  activeTopic = null;
+  activeSlug = null;
+
+  renderThemeSelect();
+
+  const res = await fetch(`/api/topics/${themeSlug}`);
+  const data = await res.json();
+  topics = data.topics;
+  renderTopics();
+
+  // Reset chat area
+  document.getElementById('topicTitle').textContent = 'Select a topic';
+  const themeName = themes.find(t => t.slug === themeSlug)?.name || themeSlug;
+  document.getElementById('breadcrumb').textContent = themeName;
+  document.getElementById('messages').innerHTML =
+    '<div class="welcome" id="welcome">Select a topic from the sidebar to start learning</div>';
+
+  if (topics.length > 0) selectTopic(topics[0]);
+}
+
+// --- Topics ---
+
+function renderTopics() {
+  const list = document.getElementById('topicList');
+  const cards = topics.map(t => {
+    const slug = slugify(t);
+    const isActive = t === activeTopic;
+    return `<div class="topic-card ${isActive ? 'active' : ''}" onclick="selectTopic('${t.replace(/'/g, "\\'")}')">
+      <span>${t}</span>
+      <span class="badge" id="badge-${slug}" style="display:none">0</span>
+    </div>`;
+  }).join('');
+  // Add "add topic" button at the end
+  list.innerHTML = cards +
+    `<div class="topic-card" onclick="showAddTopicModal()" style="justify-content:center;color:var(--primary);border:1px dashed var(--border);">
+      + Add Topic
+    </div>`;
+}
+
+async function selectTopic(topic) {
+  activeTopic = topic;
+  activeSlug = slugify(topic);
+  const themeName = themes.find(t => t.slug === activeThemeSlug)?.name || activeThemeSlug;
+  document.getElementById('topicTitle').textContent = topic;
+  document.getElementById('breadcrumb').textContent = `${themeName} > ${topic}`;
+  const welcome = document.getElementById('welcome');
+  if (welcome) welcome.style.display = 'none';
+  renderTopics();
+  document.getElementById('sidebar').classList.remove('open');
+
+  const msgArea = document.getElementById('messages');
+  msgArea.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">Loading...</div>';
+
+  const res = await fetch(`/api/history/${activeThemeSlug}/${activeSlug}`);
+  const data = await res.json();
+  renderMessages(data.messages);
+  updateBadge(activeSlug, data.messages.length);
+}
+
+function renderMessages(messages) {
+  const area = document.getElementById('messages');
+  if (messages.length === 0) {
+    area.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">Start a conversation about this topic!</div>';
+    return;
+  }
+  area.innerHTML = messages.map(m => {
+    const content = m.role === 'assistant' ? renderMarkdown(m.content) : escapeHtml(m.content);
+    return `<div class="message ${m.role}">
+      <div class="bubble">${content}</div>
+      <span class="timestamp">${formatTime(m.timestamp)}</span>
+    </div>`;
+  }).join('');
+  userScrolledUp = false;
+  scrollToBottom(true);
+  area.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>');
+}
+
+function appendMessage(role, content, timestamp) {
+  const area = document.getElementById('messages');
+  const placeholder = area.querySelector('div[style*="text-align:center"]');
+  if (placeholder) placeholder.remove();
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+  const rendered = role === 'assistant' ? renderMarkdown(content) : escapeHtml(content);
+  div.innerHTML = `<div class="bubble">${rendered}</div><span class="timestamp">${formatTime(timestamp)}</span>`;
+  area.appendChild(div);
+  scrollToBottom();
+  div.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+}
+
+// --- Scroll ---
+
+let userScrolledUp = false;
+let programmaticScroll = false;
+
+function scrollToBottom(force = false) {
+  const area = document.getElementById('messages');
+  if (force || !userScrolledUp) {
+    programmaticScroll = true;
+    area.scrollTop = area.scrollHeight;
+  }
+}
+
+document.getElementById('messages').addEventListener('scroll', function() {
+  if (programmaticScroll) { programmaticScroll = false; return; }
+  const area = this;
+  userScrolledUp = !(area.scrollHeight - area.scrollTop - area.clientHeight < 60);
+});
+
+function updateBadge(slug, count) {
+  const badge = document.getElementById(`badge-${slug}`);
+  if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline-block' : 'none'; }
+}
+
+// --- Chat ---
+
+async function sendMessage() {
+  if (sending || !activeTopic || !activeThemeSlug) return;
+  const input = document.getElementById('input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  sending = true;
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('typing').classList.add('visible');
+
+  userScrolledUp = false;
+  appendMessage('user', msg, new Date().toISOString());
+
+  try {
+    const res = await fetch(`/api/chat/${activeThemeSlug}/${activeSlug}`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message: msg})
+    });
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let fullResponse = '';
+    let assistantDiv = null;
+
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      const text = decoder.decode(value, {stream: true});
+      const lines = text.split('\n');
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const data = JSON.parse(line.slice(6));
+          if (data.type === 'chunk') {
+            fullResponse += data.content;
+            if (!assistantDiv) {
+              const area = document.getElementById('messages');
+              assistantDiv = document.createElement('div');
+              assistantDiv.className = 'message assistant';
+              assistantDiv.innerHTML = `<div class="bubble"></div><span class="timestamp">${formatTime(new Date().toISOString())}</span>`;
+              area.appendChild(assistantDiv);
+              document.getElementById('typing').classList.remove('visible');
+            }
+            let displayText = stripMeta(fullResponse);
+            assistantDiv.querySelector('.bubble').innerHTML = renderMarkdown(displayText);
+            scrollToBottom();
+          } else if (data.type === 'done') {
+            if (assistantDiv) {
+              let displayText = data.response || stripMeta(fullResponse);
+              assistantDiv.querySelector('.bubble').innerHTML = renderMarkdown(displayText);
+              assistantDiv.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+            }
+          }
+        } catch(e) {}
+      }
+    }
+  } catch(e) {
+    console.error('Chat error:', e);
+    document.getElementById('typing').classList.remove('visible');
+  }
+
+  sending = false;
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('typing').classList.remove('visible');
+}
+
+function stripMeta(text) {
+  return text.replace(/\s*<!--META:.*?-->\s*$/s, '').trim();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoGrow(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// --- Theme creation ---
+
+function showNewThemeModal() {
+  document.getElementById('newThemeName').value = '';
+  document.getElementById('newThemeTopics').value = '';
+  document.getElementById('newThemeModal').classList.add('visible');
+  document.getElementById('newThemeName').focus();
+}
+
+async function createTheme() {
+  const name = document.getElementById('newThemeName').value.trim();
+  const topicsRaw = document.getElementById('newThemeTopics').value.trim();
+  if (!name) { alert('Please enter a theme name.'); return; }
+
+  const topicsObj = {};
+  if (topicsRaw) {
+    for (const line of topicsRaw.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      if (trimmed.includes(':')) {
+        const [tName, ...descParts] = trimmed.split(':');
+        topicsObj[tName.trim()] = descParts.join(':').trim();
+      } else {
+        topicsObj[trimmed] = '';
+      }
+    }
+  }
+
+  const btn = document.getElementById('createThemeBtn');
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+
+  try {
+    const res = await fetch('/api/themes', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({name, topics: topicsObj})
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.detail || 'Failed to create theme');
+      return;
+    }
+    const data = await res.json();
+    document.getElementById('newThemeModal').classList.remove('visible');
+    // Reload themes and switch to new one
+    const themesRes = await fetch('/api/themes');
+    const themesData = await themesRes.json();
+    themes = themesData.themes;
+    renderThemeSelect();
+    await switchTheme(data.slug);
+  } catch(e) {
+    alert('Error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Create Theme';
+  }
+}
+
+// --- Add topic ---
+
+function showAddTopicModal() {
+  if (!activeThemeSlug) return;
+  document.getElementById('addTopicName').value = '';
+  document.getElementById('addTopicDesc').value = '';
+  document.getElementById('addTopicModal').classList.add('visible');
+  document.getElementById('addTopicName').focus();
+}
+
+async function addTopic() {
+  const name = document.getElementById('addTopicName').value.trim();
+  const description = document.getElementById('addTopicDesc').value.trim();
+  if (!name) { alert('Please enter a topic name.'); return; }
+
+  try {
+    const res = await fetch(`/api/themes/${activeThemeSlug}/topics`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({name, description})
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.detail || 'Failed to add topic');
+      return;
+    }
+    document.getElementById('addTopicModal').classList.remove('visible');
+    // Reload topics
+    const topicsRes = await fetch(`/api/topics/${activeThemeSlug}`);
+    const topicsData = await topicsRes.json();
+    topics = topicsData.topics;
+    renderTopics();
+    // Update theme count in dropdown
+    const theme = themes.find(t => t.slug === activeThemeSlug);
+    if (theme) theme.topic_count = topics.length;
+    renderThemeSelect();
+    // Select the new topic
+    selectTopic(name);
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+// --- Modals ---
+
+function closeModal(e, id) {
+  if (e.target === e.currentTarget) document.getElementById(id).classList.remove('visible');
+}
+
+async function showNotes() {
+  document.getElementById('notesModal').classList.add('visible');
+  const res = await fetch('/api/notes');
+  const data = await res.json();
+  document.getElementById('notesContent').innerHTML = renderMarkdown(data.content);
+}
+
+async function exportSlides(btn) {
+  if (!activeThemeSlug) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ Exporting...';
+  try {
+    const res = await fetch(`/api/export/${activeThemeSlug}`, {method: 'POST'});
+    const data = await res.json();
+    window.open(data.url, '_blank');
+  } catch(e) {
+    alert('Export failed: ' + e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = '📊 Export Slides';
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+init();
+</script>
+</body>
+</html>
