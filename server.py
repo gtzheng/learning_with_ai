@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import re
 from datetime import datetime, timezone
 from pathlib import Path
+from queue import Queue
 
 import anthropic
 import uvicorn
@@ -327,40 +329,66 @@ async def chat(theme_slug: str, topic_slug: str, req: ChatRequest):
 
     logger.info(f"Chat request for {topic_name}: {req.message[:80]}")
 
-    async def stream_response():
+    def _run_stream(q: Queue):
+        """Run the synchronous Anthropic stream in a worker thread."""
         full_text = ""
-        with client.messages.stream(
-            model=MODEL,
-            max_tokens=MAX_TOKENS,
-            system=system,
-            messages=api_messages,
-        ) as stream:
-            for text in stream.text_stream:
-                full_text += text
-                yield f"data: {json.dumps({'type': 'chunk', 'content': text})}\n\n"
+        try:
+            with client.messages.stream(
+                model=MODEL,
+                max_tokens=MAX_TOKENS,
+                system=system,
+                messages=api_messages,
+            ) as stream:
+                for text in stream.text_stream:
+                    full_text += text
+                    q.put(("chunk", text))
+        except Exception as e:
+            q.put(("error", str(e)))
+            return
+        q.put(("finish", full_text))
 
-        parsed = parse_assistant_response(full_text)
-        resp_now = datetime.now(timezone.utc).isoformat()
-        history["messages"].append({
-            "role": "assistant",
-            "content": parsed["response"],
-            "timestamp": resp_now,
-            "meta": {
-                "key_concepts": parsed.get("key_concepts", []),
-                "frustration_detected": parsed.get("frustration_detected", False),
-                "importance": parsed.get("importance", "low"),
-            },
-        })
-        save_history(theme_slug, topic_slug, history)
+    async def stream_response():
+        q: Queue = Queue()
+        loop = asyncio.get_event_loop()
+        task = loop.run_in_executor(None, _run_stream, q)
 
-        frustration = parsed.get("frustration_detected", False)
-        key_concepts = parsed.get("key_concepts", [])
-        importance = parsed.get("importance", "low")
+        while True:
+            # Poll the queue without blocking the event loop
+            while q.empty():
+                await asyncio.sleep(0.05)
+            msg_type, payload = q.get()
+            if msg_type == "chunk":
+                yield f"data: {json.dumps({'type': 'chunk', 'content': payload})}\n\n"
+            elif msg_type == "error":
+                logger.error(f"Stream error: {payload}")
+                break
+            elif msg_type == "finish":
+                full_text = payload
+                parsed = parse_assistant_response(full_text)
+                resp_now = datetime.now(timezone.utc).isoformat()
+                history["messages"].append({
+                    "role": "assistant",
+                    "content": parsed["response"],
+                    "timestamp": resp_now,
+                    "meta": {
+                        "key_concepts": parsed.get("key_concepts", []),
+                        "frustration_detected": parsed.get("frustration_detected", False),
+                        "importance": parsed.get("importance", "low"),
+                    },
+                })
+                save_history(theme_slug, topic_slug, history)
 
-        if frustration or (key_concepts and importance == "high"):
-            append_notes(topic_name, key_concepts, importance, frustration, req.message)
+                frustration = parsed.get("frustration_detected", False)
+                key_concepts = parsed.get("key_concepts", [])
+                importance = parsed.get("importance", "low")
 
-        yield f"data: {json.dumps({'type': 'done', 'response': parsed['response'], 'meta': {'key_concepts': key_concepts, 'frustration_detected': frustration, 'importance': importance}})}\n\n"
+                if frustration or (key_concepts and importance == "high"):
+                    append_notes(topic_name, key_concepts, importance, frustration, req.message)
+
+                yield f"data: {json.dumps({'type': 'done', 'response': parsed['response'], 'meta': {'key_concepts': key_concepts, 'frustration_detected': frustration, 'importance': importance}})}\n\n"
+                break
+
+        await task
 
     return StreamingResponse(stream_response(), media_type="text/event-stream")
 
