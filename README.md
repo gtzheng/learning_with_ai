@@ -1,15 +1,15 @@
-# Learning Hub
+# Learning with AI
 
-An interactive AI-powered learning platform for studying topics through chat with a Claude tutor.
+An interactive AI-powered learning platform that lets you study any topic through conversation with a Claude tutor. Define your own topics and themes in a config file, then learn at your own pace through a local web interface.
 
 ## Features
 
-- **15 LLM-related topics** with dedicated AI tutors
-- **Persistent chat history** per topic (saved as JSON)
-- **Frustration detection** — the tutor adapts when you're struggling
-- **Auto-generated learning notes** — key concepts and frustration points logged to `learning_data/learning_notes.md`
-- **Export to slides** — generates reveal.js presentations from high-signal exchanges
-- **Streaming responses** with markdown rendering and syntax highlighting
+- **Configurable topics** — define themes and subtopics in `config.json` (ships with LLM and ML fundamentals as examples)
+- **Persistent chat history** — conversations are saved per topic as JSON, so you can pick up where you left off
+- **Frustration detection** — the tutor detects when you're struggling and adapts its explanations
+- **Auto-generated learning notes** — key concepts and frustration points are logged automatically to `learning_data/learning_notes.md`
+- **Export to slides** — generate reveal.js presentations from high-signal exchanges across all topics
+- **Streaming responses** — real-time markdown rendering with syntax-highlighted code blocks
 
 ## Prerequisites
 
