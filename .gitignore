@@ -7,6 +7,7 @@ venv/
 
 # Environment
 .env
+config.json
 
 # Learning data (user-generated, keep examples/ for demo)
 learning_data/chats/

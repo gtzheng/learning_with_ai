@@ -24,6 +24,14 @@ source .venv/bin/activate
 uv pip install fastapi uvicorn anthropic
 ```
 
+## Configure
+
+Copy the example config and customize topics as you like:
+
+```bash
+cp config.example.json config.json
+```
+
 ## Run
 
 ```bash

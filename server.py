@@ -17,10 +17,12 @@ logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).parent
 CONFIG_PATH = BASE_DIR / "config.json"
+CONFIG_EXAMPLE_PATH = BASE_DIR / "config.example.json"
 
 
 def load_config() -> dict:
-    with open(CONFIG_PATH) as f:
+    path = CONFIG_PATH if CONFIG_PATH.exists() else CONFIG_EXAMPLE_PATH
+    with open(path) as f:
         return json.load(f)
 
 
